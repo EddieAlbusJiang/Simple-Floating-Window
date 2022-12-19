@@ -18,7 +18,10 @@ static wchar_t szTitle[] = _T("Attention");
 // Stored instance handle for use in Win32 API calls such as FindResource
 HINSTANCE hInst;
 
+const int fheight=30;
+
 // Forward declarations of functions included in this code module:
+
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI wWinMain(
@@ -71,9 +74,9 @@ int WINAPI wWinMain(
       WS_EX_OVERLAPPEDWINDOW,
       szWindowClass,
       szTitle,
-      WS_POPUPWINDOW,
+      WS_BORDER,
       CW_USEDEFAULT, CW_USEDEFAULT,
-      150, 200,
+      150, fheight*8,
       NULL,
       NULL,
       hInstance,
@@ -120,24 +123,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    HDC hdc;
    wchar_t greeting[] = _T("Task List");
    wchar_t tasks[5][10]={_T("Task1"),_T("Task1"),_T("Task1"),_T("Task1"),_T("Task1")};
+   HFONT hFontOriginal, hFont1, hFont2;
    switch (message)
    {
    case WM_PAINT:
+      SetWindowPos(hWnd, HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE | SWP_NOSIZE);
       hdc = BeginPaint(hWnd, &ps);
       // Here your application is laid out.
       // For this introduction, we just print out "Hello, Windows desktop!"
       // in the top left corner. _tcslen(greeting)
+      hFont1 = CreateFont(fheight,0,0,0,FW_DONTCARE,FALSE,TRUE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,
+                CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, VARIABLE_PITCH,TEXT("等线"));
+      hFont2 = CreateFont(fheight,0,0,0,FW_DONTCARE,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_OUTLINE_PRECIS,
+                CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY, VARIABLE_PITCH,TEXT("等线"));
+      hFontOriginal = (HFONT)SelectObject(hdc, hFont1);
+      //Sets the coordinates for the rectangle in which the text is to be formatted.
+      // SetRect(&rect, 100,100,700,200);
+      // SetTextColor(hdc, RGB(255,0,0));
       TextOutW(hdc, 5, 5, greeting, _tcslen(greeting));
+      SelectObject(hdc, hFont2);
       for (int i=0;i<5;i++){
-         TextOutW(hdc, 5, 25+i*20, tasks[i], _tcslen(tasks[i]));
+         TextOutW(hdc, 5, 5+fheight*(i+1), tasks[i], _tcslen(tasks[i]));
       }
       // End application-specific layout section.
       EndPaint(hWnd, &ps);
       break;
-   case WM_DESTROY:
+      case WM_DESTROY:
       PostQuitMessage(0);
       break;
-   default:
+      default:
       return DefWindowProc(hWnd, message, wParam, lParam);
       break;
    }
